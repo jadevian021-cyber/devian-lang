@@ -102,7 +102,7 @@ export default function Onboarding() {
           accessibilityRole="button"
           accessibilityLabel="Get Started"
           activeOpacity={0.9}
-          onPress={() => router.push("/")}
+          onPress={() => router.push("/sign-up")}
           className="btn btn--pill mb-6 h-16"
           style={shadows.card}
         >
