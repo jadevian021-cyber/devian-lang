@@ -1,0 +1,279 @@
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css";
+
+@import "nativewind/theme";
+
+/* ==========================================================================
+   Design tokens
+   Mirrors src/theme/*.ts. Update both when a token changes.
+   Every variable below generates matching utilities automatically.
+   ========================================================================== */
+
+@theme {
+  /* --- Brand ------------------------------------------------------------ */
+  --color-primary: #6c4ef5; /* Lingua Purple */
+  --color-primary-deep: #5b3bf6; /* Lingua Deep Purple */
+  --color-blue: #4d8bff; /* Lingua Blue */
+  --color-green: #21c16b; /* Lingua Green */
+
+  /* --- Semantic --------------------------------------------------------- */
+  --color-success: #21c16b;
+  --color-warning: #ffc800;
+  --color-streak: #ff8a00;
+  --color-error: #ff4d4f;
+  --color-info: #4d8bff;
+
+  /* --- Neutrals --------------------------------------------------------- */
+  --color-text-primary: #0d132b;
+  --color-text-secondary: #6b7280;
+  --color-border: #e5e7eb;
+  --color-surface: #f6f7fb;
+  --color-background: #ffffff;
+
+  /* --- Font families ---------------------------------------------------- */
+  /* React Native has no fallback stacks, so each weight is its own family
+     and `font-bold` alone will NOT switch the family — pick it explicitly. */
+  --font-sans: "Poppins-Regular";
+  --font-poppins: "Poppins-Regular";
+  --font-poppins-medium: "Poppins-Medium";
+  --font-poppins-semibold: "Poppins-SemiBold";
+  --font-poppins-bold: "Poppins-Bold";
+
+  /* --- Type scale ------------------------------------------------------- */
+  /* Line heights are unitless ratios, matching the design system. */
+  --text-h1: 32px;
+  --text-h1--line-height: 1.2;
+  --text-h2: 24px;
+  --text-h2--line-height: 1.3;
+  --text-h3: 20px;
+  --text-h3--line-height: 1.3;
+  --text-h4: 16px;
+  --text-h4--line-height: 1.4;
+  --text-body-lg: 16px;
+  --text-body-lg--line-height: 1.6;
+  --text-body-md: 14px;
+  --text-body-md--line-height: 1.6;
+  --text-body-sm: 13px;
+  --text-body-sm--line-height: 1.6;
+  --text-caption: 11px;
+  --text-caption--line-height: 1.4;
+
+  /* --- Radii ------------------------------------------------------------ */
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-3xl: 24px;
+}
+
+/* ==========================================================================
+   Typography utilities
+
+   Each one bundles family + size + line height so a single class produces the
+   exact style from the design system. Prefer these over composing
+   `font-poppins-bold text-h1` by hand.
+   ========================================================================== */
+
+/* Page / screen title */
+@utility type-h1 {
+  font-family: "Poppins-Bold";
+  font-size: 32px;
+  line-height: 1.2;
+  color: var(--color-text-primary);
+}
+
+/* Section title */
+@utility type-h2 {
+  font-family: "Poppins-SemiBold";
+  font-size: 24px;
+  line-height: 1.3;
+  color: var(--color-text-primary);
+}
+
+/* Card / module title */
+@utility type-h3 {
+  font-family: "Poppins-SemiBold";
+  font-size: 20px;
+  line-height: 1.3;
+  color: var(--color-text-primary);
+}
+
+/* Subheading */
+@utility type-h4 {
+  font-family: "Poppins-Medium";
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--color-text-primary);
+}
+
+/* Important content */
+@utility type-body-lg {
+  font-family: "Poppins-Regular";
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-text-primary);
+}
+
+/* Body text */
+@utility type-body-md {
+  font-family: "Poppins-Regular";
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text-primary);
+}
+
+/* Supporting text */
+@utility type-body-sm {
+  font-family: "Poppins-Regular";
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+/* Labels, meta text */
+@utility type-caption {
+  font-family: "Poppins-Regular";
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+}
+
+/* ==========================================================================
+   Component utilities (BEM)
+
+   block, block__element, block--modifier.
+   ========================================================================== */
+
+/* --- Card ---------------------------------------------------------------- */
+
+@utility card {
+  background-color: var(--color-background);
+  border-radius: var(--radius-2xl);
+  padding: 20px;
+  box-shadow: 0px 4px 12px rgba(13, 19, 43, 0.08);
+}
+
+/* Card resting on the surface colour — outlined instead of raised. */
+@utility card--flat {
+  box-shadow: none;
+  border-width: 1px;
+  border-color: var(--color-border);
+}
+
+/* Tinted card for grouped content. */
+@utility card--surface {
+  background-color: var(--color-surface);
+  box-shadow: none;
+}
+
+@utility card__title {
+  font-family: "Poppins-SemiBold";
+  font-size: 20px;
+  line-height: 1.3;
+  color: var(--color-text-primary);
+}
+
+@utility card__subtitle {
+  font-family: "Poppins-Regular";
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+/* --- Section (labelled group, as on the design system sheet) ------------- */
+
+@utility section__label {
+  font-family: "Poppins-Medium";
+  font-size: 11px;
+  line-height: 1.4;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+@utility section__divider {
+  height: 1px;
+  background-color: var(--color-border);
+}
+
+/* --- Button -------------------------------------------------------------- */
+
+@utility btn {
+  height: 56px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: var(--radius-xl);
+  padding-left: 24px;
+  padding-right: 24px;
+  background-color: var(--color-primary);
+}
+
+@utility btn--secondary {
+  background-color: var(--color-surface);
+}
+
+@utility btn--success {
+  background-color: var(--color-success);
+}
+
+@utility btn--outline {
+  background-color: transparent;
+  border-width: 2px;
+  border-color: var(--color-border);
+}
+
+@utility btn--pill {
+  border-radius: 9999px;
+}
+
+@utility btn--sm {
+  height: 44px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+@utility btn--disabled {
+  opacity: 0.5;
+}
+
+@utility btn__label {
+  font-family: "Poppins-SemiBold";
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--color-background);
+}
+
+@utility btn__label--dark {
+  color: var(--color-text-primary);
+}
+
+/* --- Badge / pill -------------------------------------------------------- */
+
+@utility badge {
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  border-radius: 9999px;
+  padding: 4px 10px;
+  background-color: var(--color-surface);
+}
+
+@utility badge__label {
+  font-family: "Poppins-Medium";
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+}
+
+/* --- Screen -------------------------------------------------------------- */
+
+@utility screen {
+  flex: 1;
+  background-color: var(--color-background);
+  padding-left: 20px;
+  padding-right: 20px;
+}
