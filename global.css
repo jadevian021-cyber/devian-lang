@@ -269,6 +269,46 @@
   color: var(--color-text-secondary);
 }
 
+/* --- Speech bubble (onboarding illustration) ----------------------------- */
+
+@utility bubble {
+  border-radius: var(--radius-xl);
+  padding: 10px 16px;
+  background-color: var(--color-surface);
+}
+
+@utility bubble--blue {
+  background-color: #eaf1ff;
+}
+
+@utility bubble--peach {
+  background-color: #fdeee8;
+}
+
+@utility bubble__label {
+  font-family: "Poppins-Medium";
+  font-size: 17px;
+  line-height: 1.2;
+  color: var(--color-text-primary);
+}
+
+@utility bubble__label--purple {
+  color: var(--color-primary);
+}
+
+@utility bubble__label--red {
+  color: #ef3d2f;
+}
+
+/* Small rotated square that points the bubble at the mascot. */
+@utility bubble__tail {
+  position: absolute;
+  bottom: -4px;
+  height: 14px;
+  width: 14px;
+  border-radius: 3px;
+}
+
 /* --- Screen -------------------------------------------------------------- */
 
 @utility screen {
