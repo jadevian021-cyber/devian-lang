@@ -333,6 +333,19 @@
   border-color: var(--color-primary);
 }
 
+/* A field Clerk rejected. */
+@utility field--error {
+  border-color: var(--color-error);
+}
+
+@utility field__error {
+  font-family: "Poppins-Regular";
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--color-error);
+  margin-top: 6px;
+}
+
 @utility field__label {
   font-family: "Poppins-Regular";
   font-size: 14px;

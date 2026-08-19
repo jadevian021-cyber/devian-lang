@@ -8,9 +8,11 @@
     "scheme": "learninapp",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.learninapp.app"
     },
     "android": {
+      "package": "com.learninapp.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -33,7 +35,10 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
-      ]
+      ],
+      "@clerk/expo",
+      "@clerk/expo-google-signin",
+      "expo-apple-authentication"
     ],
     "experiments": {
       "typedRoutes": true,

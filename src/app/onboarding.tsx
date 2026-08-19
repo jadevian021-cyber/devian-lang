@@ -1,5 +1,6 @@
+import { useAuth } from "@clerk/expo";
 import { Image } from "expo-image";
-import { useRouter } from "expo-router";
+import { Redirect, useRouter } from "expo-router";
 import { Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -11,9 +12,19 @@ import { colors, shadows } from "@/theme";
  *
  * Layout is a single column: logo, headline, subtitle, then the mascot
  * illustration with floating greeting bubbles, and a CTA pinned to the bottom.
+ * A signed-in user skips straight to home.
  */
 export default function Onboarding() {
   const router = useRouter();
+  const { isLoaded, isSignedIn } = useAuth();
+
+  if (!isLoaded) {
+    return null;
+  }
+
+  if (isSignedIn) {
+    return <Redirect href="/" />;
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>

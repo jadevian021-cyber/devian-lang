@@ -1,3 +1,4 @@
+import { useSignUp } from "@clerk/expo";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -14,19 +15,89 @@ import { colors, shadows } from "@/theme";
 /**
  * Sign Up — create an account with email + password, or a social provider.
  *
- * Pressing Sign Up opens the verification sheet. Entering all six digits sends
- * the user to the home route. No real auth yet; Clerk lands in a later step.
+ * Clerk's flow is three calls: `password()` starts the sign-up,
+ * `verifications.sendEmailCode()` emails a code, and `verifyEmailCode()` checks
+ * it. `finalize()` then turns the finished sign-up into the active session.
  */
 export default function SignUp() {
   const router = useRouter();
+  const { signUp, errors, fetchStatus } = useSignUp();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [verifying, setVerifying] = useState(false);
 
-  function handleVerified() {
+  const busy = fetchStatus === "fetching";
+
+  // Clerk sorts its errors by form field; anything it can't attribute to a
+  // field lands in `global`.
+  const globalError = errors.global?.[0]?.message ?? null;
+
+  // Clerk holds on to the last request's errors, so a global error raised inside
+  // the code sheet would otherwise reappear under the Email field once the sheet
+  // closes. Each step shows only its own.
+  const formError = verifying ? null : globalError;
+
+  async function handleSignUp() {
+    if (busy) {
+      return;
+    }
+
+    const { error } = await signUp.password({
+      emailAddress: email.trim(),
+      password,
+    });
+
+    if (error) {
+      return;
+    }
+
+    const { error: sendError } = await signUp.verifications.sendEmailCode();
+
+    if (sendError) {
+      return;
+    }
+
+    setVerifying(true);
+  }
+
+  async function handleVerify(code: string) {
+    const { error } = await signUp.verifications.verifyEmailCode({ code });
+
+    if (error) {
+      return false;
+    }
+
+    // Makes the new session active; the route guards take it from here.
+    const { error: finalizeError } = await signUp.finalize();
+
+    if (finalizeError) {
+      return false;
+    }
+
     setVerifying(false);
     router.replace("/");
+
+    return true;
+  }
+
+  async function handleClose() {
+    setVerifying(false);
+    // Drop the half-finished attempt so pressing Sign Up again starts clean.
+    await signUp.reset();
+  }
+
+  /**
+   * Resend only makes sense while a sign-up is waiting on this email. Once it
+   * completes, Clerk has consumed the attempt and any further call fails with
+   * "No sign up attempt was found".
+   */
+  async function handleResend() {
+    if (!signUp.unverifiedFields.includes("email_address")) {
+      return;
+    }
+
+    await signUp.verifications.sendEmailCode();
   }
 
   return (
@@ -86,6 +157,7 @@ export default function SignUp() {
             placeholder="alex@gmail.com"
             keyboardType="email-address"
             autoComplete="email"
+            error={errors.fields.emailAddress?.message ?? formError}
           />
 
           <AuthField
@@ -94,6 +166,7 @@ export default function SignUp() {
             onChangeText={setPassword}
             secure
             autoComplete="new-password"
+            error={errors.fields.password?.message}
           />
         </View>
 
@@ -101,13 +174,18 @@ export default function SignUp() {
         <TouchableOpacity
           accessibilityRole="button"
           accessibilityLabel="Sign Up"
+          accessibilityState={{ disabled: busy }}
           activeOpacity={0.9}
-          onPress={() => setVerifying(true)}
-          className="btn mt-5 h-16 rounded-2xl"
+          onPress={handleSignUp}
+          disabled={busy}
+          className={`btn mt-5 h-16 rounded-2xl ${busy ? "btn--disabled" : ""}`}
           style={shadows.card}
         >
           <Text className="btn__label text-h3">Sign Up</Text>
         </TouchableOpacity>
+
+        {/* Clerk's bot protection renders its challenge here when needed. */}
+        <View nativeID="clerk-captcha" />
 
         {/* Divider */}
         <View className="divider mt-7">
@@ -117,7 +195,7 @@ export default function SignUp() {
         </View>
 
         <View className="mt-6">
-          <SocialAuthGroup />
+          <SocialAuthGroup disabled={busy} />
         </View>
 
         {/* Footer */}
@@ -139,8 +217,11 @@ export default function SignUp() {
       <VerificationModal
         visible={verifying}
         email={email}
-        onClose={() => setVerifying(false)}
-        onComplete={handleVerified}
+        onClose={handleClose}
+        onComplete={handleVerify}
+        onResend={handleResend}
+        error={errors.fields.code?.message ?? globalError}
+        submitting={busy}
       />
     </SafeAreaView>
   );
