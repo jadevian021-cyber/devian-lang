@@ -1,3 +1,4 @@
+import { useSignIn } from "@clerk/expo";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -15,17 +16,80 @@ import { colors, shadows } from "@/theme";
  * Sign In — mirrors Sign Up's layout with sign-in copy.
  *
  * Email only: signing in is a passwordless code sent to the inbox, so the
- * password field from Sign Up is intentionally absent here.
+ * password field from Sign Up is intentionally absent here. Clerk calls this the
+ * `emailCode` strategy — `sendCode()` mails a code, `verifyCode()` checks it,
+ * and `finalize()` makes the session active.
  */
 export default function SignIn() {
   const router = useRouter();
+  const { signIn, errors, fetchStatus } = useSignIn();
 
   const [email, setEmail] = useState("");
   const [verifying, setVerifying] = useState(false);
 
-  function handleVerified() {
+  const busy = fetchStatus === "fetching";
+
+  // Anything Clerk can't attribute to a specific field lands in `global`.
+  const globalError = errors.global?.[0]?.message ?? null;
+
+  // Clerk holds on to the last request's errors, so a global error raised inside
+  // the code sheet would otherwise reappear under the Email field once the sheet
+  // closes. Each step shows only its own.
+  const formError = verifying ? null : globalError;
+
+  async function handleSignIn() {
+    if (busy) {
+      return;
+    }
+
+    const { error } = await signIn.emailCode.sendCode({
+      emailAddress: email.trim(),
+    });
+
+    if (error) {
+      return;
+    }
+
+    setVerifying(true);
+  }
+
+  async function handleVerify(code: string) {
+    const { error } = await signIn.emailCode.verifyCode({ code });
+
+    if (error) {
+      return false;
+    }
+
+    // Makes the session active; the route guards take it from here.
+    const { error: finalizeError } = await signIn.finalize();
+
+    if (finalizeError) {
+      return false;
+    }
+
     setVerifying(false);
     router.replace("/");
+
+    return true;
+  }
+
+  async function handleClose() {
+    setVerifying(false);
+    // Drop the half-finished attempt so pressing Sign In again starts clean.
+    await signIn.reset();
+  }
+
+  /**
+   * Resend only makes sense while the sign-in is still waiting on a code. Once a
+   * session exists, Clerk has consumed the attempt and any further call fails
+   * with "No sign in attempt was found".
+   */
+  async function handleResend() {
+    if (signIn.createdSessionId) {
+      return;
+    }
+
+    await signIn.emailCode.sendCode();
   }
 
   return (
@@ -84,6 +148,7 @@ export default function SignIn() {
             placeholder="alex@gmail.com"
             keyboardType="email-address"
             autoComplete="email"
+            error={errors.fields.identifier?.message ?? formError}
           />
         </View>
 
@@ -91,9 +156,11 @@ export default function SignIn() {
         <TouchableOpacity
           accessibilityRole="button"
           accessibilityLabel="Sign In"
+          accessibilityState={{ disabled: busy }}
           activeOpacity={0.9}
-          onPress={() => setVerifying(true)}
-          className="btn mt-5 h-16 rounded-2xl"
+          onPress={handleSignIn}
+          disabled={busy}
+          className={`btn mt-5 h-16 rounded-2xl ${busy ? "btn--disabled" : ""}`}
           style={shadows.card}
         >
           <Text className="btn__label text-h3">Sign In</Text>
@@ -107,7 +174,7 @@ export default function SignIn() {
         </View>
 
         <View className="mt-6">
-          <SocialAuthGroup />
+          <SocialAuthGroup disabled={busy} />
         </View>
 
         {/* Footer */}
@@ -129,8 +196,11 @@ export default function SignIn() {
       <VerificationModal
         visible={verifying}
         email={email}
-        onClose={() => setVerifying(false)}
-        onComplete={handleVerified}
+        onClose={handleClose}
+        onComplete={handleVerify}
+        onResend={handleResend}
+        error={errors.fields.code?.message ?? globalError}
+        submitting={busy}
       />
     </SafeAreaView>
   );
